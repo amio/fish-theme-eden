@@ -63,11 +63,15 @@ function show_git_info -d "Show git branch and dirty state"
   if [ (_git_branch_name) ]
     set -l git_branch '['(_git_branch_name)']'
 
+    set_color -o
     if [ (_is_git_dirty) ]
-      _prompt_segment normal red "$git_branch×" ' '
+      set_color -o red
+      echo -ne "$git_branch× "
     else
-      _prompt_segment normal green "$git_branch" ' '
+      set_color -o green
+      echo -ne "$git_branch "
     end
+    set_color normal
   end
 end
 
