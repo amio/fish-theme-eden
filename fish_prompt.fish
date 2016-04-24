@@ -16,7 +16,6 @@ function _prompt_segment -d "Function to show a segment"
   # Set 'em
   set_color -b $bg
   set_color $fg
-  set_color -o
 
   # Print text
   if [ -n "$argv[3]" ]
@@ -28,7 +27,7 @@ function _prompt_segment -d "Function to show a segment"
   set_color normal
 
   # Print padding
-  if [ -n "$argv[4]" ]
+  if [ (count $argv) = 4 ]
     echo -n -s $argv[4]
   end
 end
@@ -52,13 +51,12 @@ function show_host -d "Show host & user name"
 end
 
 function show_cwd -d "Function to show the current working directory"
-  set -l cwd
-  if test "$theme_short_path" = 'yes'
-    set cwd (basename (prompt_pwd))
-  else
-    set cwd (prompt_pwd)
+  if test "$theme_short_path" != 'yes' -a (prompt_pwd) != '~'
+    _prompt_segment normal cyan (dirname (prompt_pwd))'/'
   end
-  _prompt_segment normal cyan "$cwd" ' '
+  set_color -o cyan
+  echo -n (basename (prompt_pwd))' '
+  set_color normal
 end
 
 function show_git_info -d "Show git branch and dirty state"

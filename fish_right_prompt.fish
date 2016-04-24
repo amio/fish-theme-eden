@@ -3,7 +3,7 @@ function fish_right_prompt
   # Last command status
   set -l code $status
   if test $code != 0
-    echo -s (set_color red) '<' $code '> '
+    echo -s (set_color red) '-' $code '- '
   end
 
   # Timestamp
