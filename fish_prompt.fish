@@ -40,7 +40,7 @@ end
 
 function show_host -d "Show host & user name"
   # Display [user & host] info
-  if test "$THEME_EDEN_SHOW_HOST" != 'yes'
+  if test "$THEME_EDEN_SHOW_HOST" = 'yes'
     if [ (id -u) = "0" ]
       echo -n (set_color red)
     else
