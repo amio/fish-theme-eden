@@ -4,4 +4,5 @@ function eden_toggle_host -d "Toggle [host & user] info."
   else
     set -U THEME_EDEN_SHOW_HOST yes
   end
+  return 0
 end
