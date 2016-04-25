@@ -22,13 +22,15 @@ $ omf install eden
 * `eden_toggle_path` display long or short pwd.
 * `eden_toggle_host` show or hide host & user.
 * `eden_prompt_char` custom prompt char.
-* A `-SSH-` tag on ssh connection.
+* A `-SSH-` tag for ssh connection.
 
 ## Screenshot
 
 <p align="center">
 <img src="https://cdn.rawgit.com/amio/omf-theme-eden/master/screenshot.png" height="497px" width="874px">
 </p>
+
+Font: [INCONSOLATA](https://www.google.com/fonts/specimen/Inconsolata)
 
 # License
 
