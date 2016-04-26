@@ -13,7 +13,7 @@
 
 
 ```fish
-$ omf install eden
+$ omf install https://github.com/amio/omf-theme-eden
 ```
 
 ## Features
