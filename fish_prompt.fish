@@ -33,8 +33,12 @@ function _prompt_segment -d "Function to show a segment"
 end
 
 function show_ssh_status -d "Function to show the ssh tag"
-  if [ -e "$SSH_CLIENT" ]
-    _prompt_segment blue white "-SSH-" ' '
+  if [ -n "$SSH_CLIENT" ]
+    if [ (id -u) = "0" ]
+      _prompt_segment red white "-SSH-" ' '
+    else
+      _prompt_segment blue white "-SSH-" ' '
+    end
   end
 end
 
