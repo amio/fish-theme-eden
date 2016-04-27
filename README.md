@@ -21,10 +21,10 @@ $ omf uninstall eden
 
 Using [Fisherman][fisher-link]:
 ```shell
-$ fisher install https://github.com/amio/fish-theme-eden
+$ fisher https://github.com/amio/fish-theme-eden
 
 # to uninstall :/
-$ fisher uninstall eden
+$ fisher rm theme-eden
 ```
 
 ## Features
