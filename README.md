@@ -33,7 +33,7 @@ $ fisher uninstall eden
 * `eden_toggle_path` display long or short pwd.
 * `eden_toggle_host` show or hide host & user.
 * `eden_prompt_char` custom prompt char.
-* A `-SSH-` tag for ssh connection.
+* A blue (red for root user) `-SSH-` tag on ssh connection.
 
 ## Screenshot
 
