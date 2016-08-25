@@ -3,9 +3,9 @@
 #### eden
 > A theme for [fishshell][fish-link].
 
-[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE)
-[![Fish Shell Version](https://img.shields.io/badge/fish-v2.2.0-007EC7.svg?style=flat-square)](http://fishshell.com)
-[![Oh My Fish Framework](https://img.shields.io/badge/Oh%20My%20Fish-Framework-007EC7.svg?style=flat-square)](https://www.github.com/oh-my-fish/oh-my-fish)
+[![MIT License][license-badge]](/LICENSE)
+[![Fish Shell Version][fish-badge]](http://fishshell.com)
+[![Oh My Fish Framework][omf-badge]][omf-link]
 
 <br/>
 
@@ -13,7 +13,7 @@
 
 Using [Oh My Fish][omf-link]:
 ```shell
-$ omf install https://github.com/amio/fish-theme-eden
+$ omf install eden
 
 # to uninstall :/
 $ omf uninstall eden
@@ -45,14 +45,14 @@ Font: [INCONSOLATA](https://www.google.com/fonts/specimen/Inconsolata)
 
 # License
 
-[MIT][mit] © [amio][author] et [al][contributors]
+[MIT][mit] © [Amio][author]
 
 
 [mit]:            http://opensource.org/licenses/MIT
 [author]:         http://github.com/amio
-[contributors]:   https://github.com/amio/fish-theme-eden/graphs/contributors
 [fish-link]:      http://fishshell.com/
-[omf-link]:       https://www.github.com/oh-my-fish/oh-my-fish
+[omf-link]:       https://github.com/oh-my-fish/oh-my-fish
 [fisher-link]:    https://github.com/fisherman/fisherman
-
+[omf-badge]:      https://img.shields.io/badge/Oh%20My%20Fish-Framework-007EC7.svg?style=flat-square
+[fish-badge]:     https://img.shields.io/badge/fish-v2.2.0-007EC7.svg?style=flat-square
 [license-badge]:  https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square
