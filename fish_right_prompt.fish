@@ -7,7 +7,7 @@ function fish_right_prompt
   end
 
   # Timestamp
-  set_color $fish_color_autosuggestion ^/dev/null; or set_color 555
+  set_color $fish_color_autosuggestion 2> /dev/null; or set_color 555
   echo (date "+%H:%M:%S")
 
 end
