@@ -54,6 +54,6 @@ Font: [INCONSOLATA](https://www.google.com/fonts/specimen/Inconsolata)
 [fish-link]:      http://fishshell.com/
 [omf-link]:       https://github.com/oh-my-fish/oh-my-fish
 [fisher-link]:    https://github.com/fisherman/fisherman
-[omf-badge]:      https://img.shields.io/badge/Oh%20My%20Fish-Framework-007EC7.svg?style=flat-square
-[fish-badge]:     https://img.shields.io/badge/fish-v2.2.0-007EC7.svg?style=flat-square
-[license-badge]:  https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square
+[omf-badge]:      https://flat.badgen.net/badge/Oh%20My%20Fish/Framework
+[fish-badge]:     https://flat.badgen.net/badge/fish/v2.2.0
+[license-badge]:  https://flat.badgen.net/badge/license/MIT
