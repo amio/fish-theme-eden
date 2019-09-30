@@ -33,6 +33,7 @@ $ fisher rm theme-eden
 * `eden_toggle_path` display long or short pwd.
 * `eden_toggle_host` show or hide host & user.
 * `eden_prompt_char` custom prompt char.
+* `eden_toggle_ssh_tag` show or hide `-SSH-` tag.
 * A blue (red for root user) `-SSH-` tag on ssh connection.
 
 ## Screenshot
