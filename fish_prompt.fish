@@ -90,10 +90,8 @@ function show_prompt_char -d "Terminate with a nice prompt char"
 end
 
 function fish_prompt
-  set fish_greeting
-
-  # The newline before prompts
-  echo ''
+  # use tput to move cursor to line start
+  echo -ne (tput cr)
 
   show_ssh_status
   show_host

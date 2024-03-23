@@ -9,4 +9,10 @@
 #
 
 function fish_greeting
+  # cleanup fish_greeting
+end
+
+# Append a new line to every command result
+function postexec_newline --on-event fish_postexec
+   echo # add newline after command outputs
 end
