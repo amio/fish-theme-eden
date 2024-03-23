@@ -29,7 +29,7 @@ $ fisher rm theme-eden
 
 ## Features
 
-* Last command's timestamp & exit status on right.
+* Last command's **timestamp**, **duration**, and **exit status**(if not zero) on right.
 * `eden_toggle_path` display long or short pwd.
 * `eden_toggle_host` show or hide host & user.
 * `eden_prompt_char` custom prompt char.
