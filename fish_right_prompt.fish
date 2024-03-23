@@ -15,7 +15,16 @@ function fish_right_prompt
   
   # Output the duration of the last command
   if test $CMD_DURATION -ne 0
-    echo "$CMD_DURATION""ms "
+    if test $CMD_DURATION -ge 60000
+      set -l duration_minutes (math "floor($CMD_DURATION / 60000)")
+      set -l duration_seconds (math "round(($CMD_DURATION % 60000) / 1000)")
+      printf "%02d:%02d " $duration_minutes $duration_seconds
+    else if test $CMD_DURATION -ge 1000
+      set -l duration_seconds (math "round($CMD_DURATION / 1000)")
+      echo "$duration_seconds""s "
+    else
+      echo "$CMD_DURATION""ms "
+    end
   end
 
   # Output the current time
