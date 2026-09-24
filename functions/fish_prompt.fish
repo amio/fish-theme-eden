@@ -56,7 +56,7 @@ function show_host -d "Show host & user name"
 end
 
 function show_cwd -d "Function to show the current working directory"
-  set -l display_pwd (prompt_pwd)
+  set -l display_pwd (prompt_pwd --full-length-dirs 2)
   if test "$theme_short_path" != 'yes' -a "$display_pwd" != '~' -a "$display_pwd" != '/'
     set -l cwd (path dirname "$display_pwd")
     test "$cwd" != '/'; and set cwd $cwd'/'

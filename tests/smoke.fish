@@ -74,6 +74,21 @@ if not _is_git_dirty
   exit 1
 end
 
+mkdir -p $temp_repo/eden-parent/eden-child
+cd $temp_repo/eden-parent/eden-child
+or exit 1
+set -g theme_short_path no
+set -l default_path (show_cwd | string replace --all --regex '\x1b\[[0-9;]*m' '')
+assert_contains "$default_path" 'eden-parent/eden-child ' 'default path'
+
+set -g theme_short_path yes
+set -l short_path (show_cwd | string replace --all --regex '\x1b\[[0-9;]*m' '')
+assert_contains "$short_path" 'eden-child ' 'short path'
+if string match --quiet '*eden-parent*' -- "$short_path"
+  echo 'short path included parent directory' >&2
+  exit 1
+end
+
 cd $previous_directory
 command rm -rf $temp_repo
 echo 'smoke checks passed'

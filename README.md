@@ -24,7 +24,7 @@ Remove it with `fisher remove amio/fish-theme-eden`.
 
 - The right prompt shows the current time, last command duration, and nonzero exit status.
 - The left prompt shows the current directory and Git branch, with a marker for uncommitted changes.
-- `eden_toggle_path` switches between abbreviated and short directory paths.
+- `eden_toggle_path` switches between an abbreviated path with the last two directories shown in full and the current directory alone.
 - `eden_toggle_host` shows or hides the host and user.
 - `eden_prompt_char` sets a custom prompt character; run it without an argument to restore `»`.
 - `eden_toggle_ssh_tag` shows or hides the `-SSH-` tag on SSH connections. The tag is red for root and blue otherwise.
