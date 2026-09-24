@@ -1,6 +1,6 @@
 # Eden
 
-A theme for [Fish](https://fishshell.com) with Git status, command duration, and a compact right prompt.
+A theme for [Fish](https://fishshell.com) with Git status and a right-aligned summary of the last command.
 
 ## Install
 
@@ -22,7 +22,7 @@ Remove it with `fisher remove amio/fish-theme-eden`.
 
 ## Features
 
-- The right prompt shows the current time, last command duration, and nonzero exit status.
+- After each command, a line above the next prompt shows its completion time, duration, and nonzero exit status on the right.
 - The left prompt shows the current directory and Git branch, with a marker for uncommitted changes.
 - `eden_toggle_path` switches between an abbreviated path with the last two directories shown in full and the current directory alone.
 - `eden_toggle_host` shows or hides the host and user.

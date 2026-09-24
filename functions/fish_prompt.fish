@@ -92,7 +92,48 @@ function show_prompt_char -d "Terminate with a nice prompt char"
   printf '%s ' "$prompt_char"
 end
 
+function __eden_result_line
+  set -l duration $__eden_last_duration
+  if test -z "$duration"
+    set duration 0
+  end
+
+  if test "$duration" -ge 1000
+    set -l total_seconds (math "round($duration / 1000)")
+    if test "$total_seconds" -ge 60
+      set -l minutes (math "floor($total_seconds / 60)")
+      set -l seconds (math "$total_seconds % 60")
+      set duration (printf '%02d:%02d' $minutes $seconds)
+    else
+      set duration "$total_seconds"s
+    end
+  else
+    set duration "$duration"ms
+  end
+
+  set -l summary
+  set -l normal_color (set_color normal)
+  if test "$__eden_last_status" -ne 0
+    set -l error_color (set_color red)
+    set summary "$error_color-$__eden_last_status- $normal_color"
+  end
+
+  set -l muted (set_color $fish_color_autosuggestion 2> /dev/null; or set_color 555)
+  set summary "$summary$muted$duration $__eden_last_finished_at$normal_color"
+
+  # Leave the final column free to avoid terminal auto-wrap.
+  set -l width (math "$COLUMNS - 1")
+  if test "$width" -lt 1
+    set width 1
+  end
+  set summary (string shorten --left --max $width -- "$summary")
+  string pad --width $width -- "$summary"
+end
+
 function fish_prompt
+  if set -q __eden_show_result
+    __eden_result_line
+  end
   show_ssh_status
   show_host
   show_cwd

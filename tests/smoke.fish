@@ -2,6 +2,7 @@ set -l root (realpath (dirname (status filename))/..)
 source $root/functions/fish_prompt.fish
 source $root/functions/fish_right_prompt.fish
 source $root/functions/fish_mode_prompt.fish
+source $root/conf.d/eden.fish
 
 function assert_contains -a output expected label
   if not string match --quiet "*$expected*" -- "$output"
@@ -10,24 +11,85 @@ function assert_contains -a output expected label
   end
 end
 
-set -l duration (begin; set -g CMD_DURATION 119999; fish_right_prompt; end)
-assert_contains "$duration" '02:00 ' 'minute rollover'
+set -l initial_prompt (fish_prompt | string collect -N)
+if string match --quiet --regex '\n' -- "$initial_prompt"
+  echo 'initial prompt included a command result' >&2
+  exit 1
+end
 
-set -l boundary (begin; set -g CMD_DURATION 59999; fish_right_prompt; end)
+set -g COLUMNS 80
+set -g CMD_DURATION 119999
+false
+__eden_capture_command_result
+if test "$__eden_last_status" -ne 1
+  echo 'postexec did not capture the failed command status' >&2
+  exit 1
+end
+__eden_prepare_prompt
+
+set -l result_line (__eden_result_line)
+assert_contains "$result_line" '-1- 02:00 ' 'failed command result'
+if not string match --quiet --regex '[0-9]{2}:[0-9]{2}:[0-9]{2}$' -- "$result_line"
+  echo 'command result is missing its completion time' >&2
+  exit 1
+end
+if test (string length --visible -- "$result_line") -ne 79
+  echo 'command result is not aligned to the right' >&2
+  exit 1
+end
+
+set -l rendered_prompt (fish_prompt | string collect -N)
+set -l prompt_lines (string split \n -- "$rendered_prompt")
+if test (count $prompt_lines) -ne 2
+  echo 'command result was not above the next prompt' >&2
+  exit 1
+end
+assert_contains "$prompt_lines[1]" '-1- 02:00 ' 'result above prompt'
+
+set -l redrawn_prompt (fish_prompt | string collect -N)
+if not string match --quiet '*-1- 02:00 *' -- "$redrawn_prompt"
+  echo 'prompt redraw lost the command result' >&2
+  exit 1
+end
+
+__eden_prepare_prompt
+set -l empty_prompt (fish_prompt | string collect -N)
+if string match --quiet --regex '\n' -- "$empty_prompt"
+  echo 'empty prompt repeated the previous command result' >&2
+  exit 1
+end
+
+set -l right_prompt (fish_right_prompt)
+if test -n "$right_prompt"
+  echo 'right prompt still shows the previous command result' >&2
+  exit 1
+end
+
+set -g __eden_last_duration 59999
+set -l boundary (__eden_result_line)
 assert_contains "$boundary" '01:00 ' 'seconds rollover'
 
-set -l seconds (begin; set -g CMD_DURATION 1500; fish_right_prompt; end)
+set -g __eden_last_duration 1500
+set -l seconds (__eden_result_line)
 assert_contains "$seconds" '2s ' 'rounded seconds'
 
-set -l failed (begin; set -e CMD_DURATION; false; fish_right_prompt 2>&1; end)
-assert_contains "$failed" '-1- ' 'exit status'
-if string match --quiet '*Missing argument*' -- "$failed"
+set -g __eden_last_duration ''
+set -l zero (__eden_result_line 2>&1)
+assert_contains "$zero" '0ms ' 'missing duration'
+if string match --quiet '*Missing argument*' -- "$zero"
   echo 'unset duration caused an error' >&2
   exit 1
 end
 
-if string match --quiet --regex '\r|\x1b\[[0-9;]*[A-H]' -- "$failed"
-  echo 'right prompt moved the terminal cursor' >&2
+set -g COLUMNS 12
+set -l narrow (__eden_result_line)
+if test (string length --visible -- "$narrow") -gt 11
+  echo 'command result wrapped in a narrow terminal' >&2
+  exit 1
+end
+
+if string match --quiet --regex '\r|\x1b\[[0-9;]*[A-H]' -- "$result_line"
+  echo 'command result moved the terminal cursor' >&2
   exit 1
 end
 
