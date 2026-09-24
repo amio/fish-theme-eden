@@ -34,7 +34,7 @@ end
 function show_ssh_status -d "Function to show the ssh tag"
   if test "$THEME_EDEN_HIDE_SSH_TAG" != 'yes'
     if [ -n "$SSH_CLIENT" ]
-      if [ (id -u) = "0" ]
+      if fish_is_root_user
         _prompt_segment red white "-SSH-" ' '
       else
         _prompt_segment blue white "-SSH-" ' '
@@ -46,24 +46,24 @@ end
 function show_host -d "Show host & user name"
   # Display [user & host] info
   if test "$THEME_EDEN_SHOW_HOST" = 'yes'
-    if [ (id -u) = "0" ]
+    if fish_is_root_user
       echo -n (set_color red)
     else
       echo -n (set_color blue)
     end
-    echo -n ''(hostname|cut -d . -f 1)ˇ$USER' ' (set_color normal)
+    echo -n ''(prompt_hostname)ˇ$USER' ' (set_color normal)
   end
 end
 
 function show_cwd -d "Function to show the current working directory"
   set -l display_pwd (prompt_pwd)
   if test "$theme_short_path" != 'yes' -a "$display_pwd" != '~' -a "$display_pwd" != '/'
-    set -l cwd (dirname "$display_pwd")
+    set -l cwd (path dirname "$display_pwd")
     test "$cwd" != '/'; and set cwd $cwd'/'
     _prompt_segment normal cyan $cwd
   end
   set_color -o cyan
-  echo -n (basename "$display_pwd")' '
+  echo -n (path basename "$display_pwd")' '
   set_color normal
 end
 
