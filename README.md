@@ -29,6 +29,10 @@ Remove it with `fisher remove amio/fish-theme-eden`.
 - `eden_prompt_char` sets a custom prompt character; run it without an argument to restore `»`.
 - `eden_toggle_ssh_tag` shows or hides the `-SSH-` tag on SSH connections. The tag is red for root and blue otherwise.
 
+## Screenshot
+
+![Fish Shell theme Eden screenshot](screenshot.png)
+
 ## Development
 
 Run `fish --no-config tests/smoke.fish` to check prompt formatting and Git status detection.
