@@ -1,5 +1,17 @@
 function _git_branch_name
   command git symbolic-ref --quiet --short HEAD 2> /dev/null
+  or begin
+    set -l commit (command git rev-parse --short HEAD 2> /dev/null)
+    if test -n "$commit"
+      printf 'detached@%s\n' "$commit"
+    end
+  end
+end
+
+function _is_git_worktree
+  # Linked worktrees have their own Git directory and share the common directory.
+  set -l git_dirs (command git rev-parse --path-format=absolute --git-dir --git-common-dir 2> /dev/null)
+  test (count $git_dirs) -eq 2; and test "$git_dirs[1]" != "$git_dirs[2]"
 end
 
 function _is_git_dirty
@@ -67,10 +79,13 @@ function show_cwd -d "Function to show the current working directory"
   set_color normal
 end
 
-function show_git_info -d "Show git branch and dirty state"
+function show_git_info -d "Show git HEAD, linked worktree, and dirty state"
   set -l branch (_git_branch_name)
   if test -n "$branch"
     set -l git_branch "[$branch]"
+    if _is_git_worktree
+      set git_branch "{$branch}"
+    end
 
     set_color -o
     if _is_git_dirty

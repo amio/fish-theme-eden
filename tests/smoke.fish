@@ -11,6 +11,13 @@ function assert_contains -a output expected label
   end
 end
 
+function assert_equal -a output expected label
+  if test "$output" != "$expected"
+    printf '%s: expected %s, got %s\n' "$label" (string escape -- "$expected") (string escape -- "$output") >&2
+    exit 1
+  end
+end
+
 set -l initial_prompt (fish_prompt | string collect -N)
 if string match --quiet --regex '\n' -- "$initial_prompt"
   echo 'initial prompt included a command result' >&2
@@ -118,7 +125,8 @@ if test -n "$insert_mode"
   exit 1
 end
 
-set -l temp_repo (mktemp -d)
+set -l temp_root (mktemp -d)
+set -l temp_repo $temp_root/main
 command git init --quiet $temp_repo
 or exit 1
 set -l previous_directory $PWD
@@ -129,6 +137,51 @@ if _is_git_dirty
   echo 'new repository was marked dirty' >&2
   exit 1
 end
+
+command git -c user.name='Eden Test' -c user.email=eden@example.invalid commit --quiet --allow-empty -m initial
+or exit 1
+set -l main_branch (_git_branch_name)
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "[$main_branch] " 'main checkout label'
+
+command git worktree add --quiet -b eden-feature $temp_root/linked
+or exit 1
+command git worktree add --quiet --detach $temp_root/detached
+or exit 1
+
+cd $temp_root/linked
+or exit 1
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'linked worktree label'
+mkdir nested
+cd nested
+or exit 1
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'nested worktree label'
+echo changed > ../tracked
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'untracked worktree changes'
+command git add ../tracked
+or exit 1
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'staged worktree changes'
+
+cd $temp_root/detached
+or exit 1
+set -l commit (command git rev-parse --short HEAD)
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} " 'detached worktree label'
+touch untracked
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit}× " 'detached worktree changes'
+
+cd $temp_repo
+or exit 1
+command git checkout --quiet --detach
+or exit 1
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "[detached@$commit] " 'main detached HEAD label'
+command git checkout --quiet $main_branch
+or exit 1
+
+cd $temp_root
+or exit 1
+set -l outside_git (show_git_info | string collect)
+assert_equal "$outside_git" '' 'outside Git repository'
+cd $temp_repo
+or exit 1
 
 touch untracked
 if not _is_git_dirty
@@ -152,5 +205,5 @@ if string match --quiet '*eden-parent*' -- "$short_path"
 end
 
 cd $previous_directory
-command rm -rf $temp_repo
+command rm -rf $temp_root
 echo 'smoke checks passed'
