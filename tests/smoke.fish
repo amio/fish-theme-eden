@@ -19,8 +19,8 @@ function assert_equal -a output expected label
 end
 
 set -l initial_prompt (fish_prompt | string collect -N)
-if string match --quiet --regex '\n' -- "$initial_prompt"
-  echo 'initial prompt included a command result' >&2
+if not string match --quiet --regex '^\n[^\n]+$' -- "$initial_prompt"
+  echo 'initial prompt is missing its leading blank line or included a command result' >&2
   exit 1
 end
 
@@ -61,8 +61,8 @@ end
 
 __eden_prepare_prompt
 set -l empty_prompt (fish_prompt | string collect -N)
-if string match --quiet --regex '\n' -- "$empty_prompt"
-  echo 'empty prompt repeated the previous command result' >&2
+if not string match --quiet --regex '^\n[^\n]+$' -- "$empty_prompt"
+  echo 'empty prompt is missing its leading blank line or repeated the previous command result' >&2
   exit 1
 end
 

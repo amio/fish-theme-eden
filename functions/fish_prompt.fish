@@ -148,6 +148,8 @@ end
 function fish_prompt
   if set -q __eden_show_result
     __eden_result_line
+  else
+    printf '\n'
   end
   show_ssh_status
   show_host
