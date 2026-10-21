@@ -156,17 +156,17 @@ cd nested
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'nested worktree label'
 echo changed > ../tracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'untracked worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}+1-0 ' 'untracked worktree changes'
 command git add ../tracked
 or exit 1
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'staged worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}+1-0 ' 'staged worktree changes'
 
 cd $temp_root/detached
 or exit 1
 set -l commit (command git rev-parse --short HEAD)
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} " 'detached worktree label'
 touch untracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit}× " 'detached worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit}+0-0 " 'detached worktree changes'
 
 cd $temp_repo
 or exit 1
@@ -188,6 +188,48 @@ if not _is_git_dirty
   echo 'untracked file was not marked dirty' >&2
   exit 1
 end
+
+printf 'one\ntwo\nthree\n' > tracked
+command git add tracked
+command git -c user.name='Eden Test' -c user.email=eden@example.invalid commit --quiet -m tracked
+or exit 1
+printf 'one\nstaged\nthree\n' > tracked
+command git add tracked
+printf 'one\nworking\nthree\n' > tracked
+assert_equal (_git_diff_stats) '1 1' 'net staged and unstaged diff'
+set -l colored_git (show_git_info | string collect -N)
+set -l expected_colors (printf '%s+1%s-1 ' (set_color -o green) (set_color -o red))
+if not string match --quiet --regex (string escape --style=regex -- "$expected_colors") -- "$colored_git"
+  echo 'diff statistics did not use green additions and red deletions' >&2
+  exit 1
+end
+
+printf 'new\nlines\n' > 'untracked with spaces'
+printf 'ignored\n' > ignored
+printf 'ignored\n' > .git/info/exclude
+printf '\0binary\n' > binary
+assert_equal (_git_diff_stats) '3 1' 'untracked text, binary, empty, and ignored files'
+mkdir nested
+cd nested
+or exit 1
+command git config diff.relative true
+assert_equal (_git_diff_stats) '3 1' 'repository-wide diff from a subdirectory'
+cd $temp_repo
+or exit 1
+printf 'one\ntwo\nthree\n' > tracked
+assert_equal (_git_diff_stats) '2 0' 'staged and unstaged changes cancel out'
+command rm tracked
+assert_equal (_git_diff_stats) '2 3' 'deleted tracked file'
+
+command git init --quiet $temp_root/unborn
+or exit 1
+cd $temp_root/unborn
+or exit 1
+printf 'one\ntwo\n' > tracked
+command git add tracked
+printf 'one\n' > tracked
+printf 'new\n' > untracked
+assert_equal (_git_diff_stats) '2 0' 'net diff before first commit'
 
 mkdir -p $temp_repo/eden-parent/eden-child
 cd $temp_repo/eden-parent/eden-child

@@ -23,8 +23,8 @@ Remove it with `fisher remove amio/fish-theme-eden`.
 ## Features
 
 - After each command, a line above the next prompt shows its completion time, duration, and nonzero exit status on the right.
-- The left prompt starts on a new line directly below the command summary, or after a blank line when there is no summary. It shows the current directory and Git branch, with a marker for uncommitted changes.
-- Linked Git worktrees use braces, for example `{feature}`, while the main checkout uses brackets, for example `[feature]`. A detached HEAD shows `detached@` followed by the short commit ID, for example `{detached@abc1234}` in a linked worktree or `[detached@abc1234]` in the main checkout. Clean Git labels are green; uncommitted changes turn them red and add `×`.
+- The left prompt starts on a new line directly below the command summary, or after a blank line when there is no summary. It shows the current directory and Git branch, with diff statistics for uncommitted changes.
+- Linked Git worktrees use braces, for example `{feature}`, while the main checkout uses brackets, for example `[feature]`. A detached HEAD shows `detached@` followed by the short commit ID, for example `{detached@abc1234}` in a linked worktree or `[detached@abc1234]` in the main checkout. Clean Git labels are green; uncommitted changes turn them red and append statistics such as `+88-25`, with additions in green and deletions in red. Counts include staged, unstaged, and untracked files, using the net diff against HEAD for tracked files. Changes without text line differences, such as binary or empty files, show `+0-0`.
 - `eden_toggle_path` switches between an abbreviated path with the last two directories shown in full and the current directory alone.
 - `eden_toggle_host` shows or hides the host and user.
 - `eden_prompt_char` sets a custom prompt character; run it without an argument to restore `»`.

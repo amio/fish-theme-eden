@@ -18,6 +18,21 @@ function _is_git_dirty
   command git status --short --ignore-submodules=dirty 2> /dev/null | string length --quiet
 end
 
+function _git_diff_stats
+  set -l root (command git rev-parse --show-toplevel 2> /dev/null)
+  set -l base HEAD
+  if not command git rev-parse --verify HEAD > /dev/null 2>&1
+    # Compare against an empty tree before the first commit.
+    set base (command git hash-object -t tree /dev/null)
+  end
+  begin
+    command git -C "$root" diff --numstat --no-ext-diff --no-textconv --ignore-submodules=dirty $base -- 2> /dev/null
+    for file in (command git -C "$root" ls-files --others --exclude-standard -z | string split0)
+      command git diff --no-index --numstat --no-ext-diff --no-textconv -- /dev/null "$root/$file" 2> /dev/null
+    end
+  end | command awk -F '\t' '$1 ~ /^[0-9]+$/ && $2 ~ /^[0-9]+$/ { added += $1; removed += $2 } END { printf "%d %d\n", added, removed }'
+end
+
 ## Function to show a segment
 function _prompt_segment -d "Function to show a segment"
   # Get colors
@@ -90,7 +105,12 @@ function show_git_info -d "Show git HEAD, linked worktree, and dirty state"
     set_color -o
     if _is_git_dirty
       set_color -o red
-      echo -ne "$git_branch× "
+      printf '%s' "$git_branch"
+      set -l stats (string split ' ' -- (_git_diff_stats))
+      set_color -o green
+      printf '+%s' $stats[1]
+      set_color -o red
+      printf '-%s ' $stats[2]
     else
       set_color -o green
       echo -ne "$git_branch "
