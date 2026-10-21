@@ -105,7 +105,7 @@ function show_git_info -d "Show git HEAD, linked worktree, and dirty state"
     set_color -o
     if _is_git_dirty
       set_color -o red
-      printf '%s' "$git_branch"
+      printf '%s ' "$git_branch"
       set -l stats (string split ' ' -- (_git_diff_stats))
       set_color -o green
       printf '+%s' $stats[1]

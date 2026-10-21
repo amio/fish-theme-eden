@@ -156,17 +156,17 @@ cd nested
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'nested worktree label'
 echo changed > ../tracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}+1-0 ' 'untracked worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'untracked worktree changes'
 command git add ../tracked
 or exit 1
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}+1-0 ' 'staged worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'staged worktree changes'
 
 cd $temp_root/detached
 or exit 1
 set -l commit (command git rev-parse --short HEAD)
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} " 'detached worktree label'
 touch untracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit}+0-0 " 'detached worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} +0-0 " 'detached worktree changes'
 
 cd $temp_repo
 or exit 1
