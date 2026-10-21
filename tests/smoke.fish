@@ -2,6 +2,7 @@ set -l root (realpath (dirname (status filename))/..)
 source $root/functions/fish_prompt.fish
 source $root/functions/fish_right_prompt.fish
 source $root/functions/fish_mode_prompt.fish
+source $root/functions/eden_toggle_diff_stats.fish
 source $root/conf.d/eden.fish
 
 function assert_contains -a output expected label
@@ -160,6 +161,17 @@ assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') 
 command git add ../tracked
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'staged worktree changes'
+
+eden_toggle_diff_stats
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'hidden diff statistics'
+set -l hidden_git (show_git_info | string collect -N)
+set -l dirty_label (printf '%s{eden-feature}× ' (set_color -o red))
+if not string match --quiet --regex (string escape --style=regex -- "$dirty_label") -- "$hidden_git"
+  echo 'hiding diff statistics lost the red dirty branch marker' >&2
+  exit 1
+end
+eden_toggle_diff_stats
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'restored diff statistics'
 
 cd $temp_root/detached
 or exit 1
