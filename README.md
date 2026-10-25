@@ -31,6 +31,8 @@ Remove it with `fisher remove amio/fish-theme-eden`.
 - `eden_prompt_char` sets a custom prompt character; run it without an argument to restore `»`.
 - `eden_toggle_ssh_tag` shows or hides the `-SSH-` tag on SSH connections. The tag is red for root and blue otherwise.
 
+Diff statistics use Myers and copy detection (`git diff --diff-algorithm=myers --find-copies HEAD`), matching Tig's default diff settings. This can differ from plain `git diff` when `diff.algorithm` is configured or files are copied. Tig shows staged and unstaged changes separately; Eden shows their net effect, plus untracked files. External diff helpers and text conversion are disabled. Large sets of untracked files are processed in a batch using a temporary index and object directory, leaving the repository's index and objects untouched.
+
 ## Screenshot
 
 ![Fish Shell theme Eden screenshot](screenshot.png)

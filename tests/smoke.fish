@@ -243,6 +243,64 @@ printf 'one\n' > tracked
 printf 'new\n' > untracked
 assert_equal (_git_diff_stats) '2 0' 'net diff before first commit'
 
+command git init --quiet $temp_root/diff-options
+or exit 1
+cd $temp_root/diff-options
+or exit 1
+command git config diff.algorithm histogram
+command git config diff.renames false
+printf '%s\n' b c a f d d b a a a d e c a b > algorithm
+seq 40 > original
+command git add .
+command git -c user.name='Eden Test' -c user.email=eden@example.invalid commit --quiet -m initial
+or exit 1
+printf '%s\n' e e c c b a c b a f c c b b c > algorithm
+assert_equal (_git_diff_stats) '9 9' 'Tig default algorithm despite diff.algorithm configuration'
+command git restore algorithm
+command cp original copied
+printf 'changed\n' >> original
+printf '%s\n' (seq 39) replacement > copied
+command git add original copied
+assert_equal (_git_diff_stats) '2 1' 'Tig copy detection despite diff.renames configuration'
+command git reset --quiet --hard HEAD
+or exit 1
+
+# Exercise the batch path with literal filenames, Git attributes, and symlinks.
+printf 'forced-binary -diff\nforced-text diff\n' > .gitattributes
+printf 'one\ntwo\n' > forced-binary
+printf '\0one\ntwo\n' > forced-text
+printf 'one\ntwo\n' > 'space name'
+set -l tab_name (printf 'tab\tname')
+set -l newline_name (printf 'line\nbreak' | string collect)
+printf 'one\ntwo\n' > "$tab_name"
+printf 'one\ntwo\n' > "$newline_name"
+printf 'one\ntwo\n' > ':()magic'
+printf 'one\ntwo' > '-leading-dash'
+printf '\0binary\n' > binary
+touch empty
+command ln -s missing-target link
+printf 'ignored\n' > ignored
+printf 'ignored\n' >> .git/info/exclude
+set -l index_before (command git hash-object .git/index)
+set -l objects_before (command find .git/objects -type f | sort | string collect)
+assert_equal (_git_diff_stats) '15 0' 'batched untracked diff statistics'
+assert_equal (command git hash-object .git/index) "$index_before" 'batch preserves the real index'
+assert_equal (command find .git/objects -type f | sort | string collect) "$objects_before" 'batch preserves the real objects'
+mkdir nested
+cd nested
+or exit 1
+command git config diff.relative true
+assert_equal (_git_diff_stats) '15 0' 'batched untracked files from a subdirectory'
+cd ..
+or exit 1
+command git init --quiet embedded
+command git -C embedded -c user.name='Eden Test' -c user.email=eden@example.invalid commit --quiet --allow-empty -m initial
+or exit 1
+assert_equal (_git_diff_stats) '15 0' 'untracked embedded repository has no text line statistics'
+command git init --quiet unborn-embedded
+or exit 1
+assert_equal (_git_diff_stats) '15 0' 'failed batch falls back to individual files'
+
 mkdir -p $temp_repo/eden-parent/eden-child
 cd $temp_repo/eden-parent/eden-child
 or exit 1
