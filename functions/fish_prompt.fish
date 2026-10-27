@@ -18,33 +18,8 @@ function _is_git_dirty
   command git status --short --ignore-submodules=dirty 2> /dev/null | string length --quiet
 end
 
-function _git_untracked_diff_stats -a root
-  set -l files (command git -C "$root" ls-files --others --exclude-standard -z 2> /dev/null | string split0)
-  test (count $files) -gt 0; or return
-
-  # Amortize Git startup for many files without changing the real index or objects.
-  if test (count $files) -ge 8
-    set -l temporary (command mktemp -d)
-    if test -n "$temporary"
-      command mkdir "$temporary/objects"
-      set -l stats (begin
-        set -lx GIT_INDEX_FILE "$temporary/index"
-        set -lx GIT_OBJECT_DIRECTORY "$temporary/objects"
-        printf '%s\0' $files | command git -C "$root" --literal-pathspecs -c core.splitIndex=false -c core.sparseCheckout=false add --intent-to-add --pathspec-from-file=- --pathspec-file-nul 2> /dev/null
-        and command git -C "$root" diff-files --numstat --no-ext-diff --no-textconv --ignore-submodules=all --diff-algorithm=myers -- 2> /dev/null
-      end)
-      set -l result $status
-      command rm -rf -- "$temporary"
-      if test $result -eq 0
-        printf '%s\n' $stats
-        return
-      end
-    end
-  end
-
-  for file in $files
-    command git -C "$root" diff --no-index --numstat --no-ext-diff --no-textconv -- /dev/null "$root/$file" 2> /dev/null
-  end
+function _git_untracked_count
+  count (command git ls-files --others --exclude-standard -z -- ':/' 2> /dev/null | string split0)
 end
 
 function _git_diff_stats
@@ -54,11 +29,9 @@ function _git_diff_stats
     # Compare against an empty tree before the first commit.
     set base (command git hash-object -t tree /dev/null)
   end
-  begin
-    # Match Tig's default copy detection and plumbing diff algorithm.
-    command git -C "$root" diff --numstat --find-copies --diff-algorithm=myers --no-ext-diff --no-textconv --ignore-submodules=dirty $base -- 2> /dev/null
-    _git_untracked_diff_stats "$root"
-  end | command awk -F '\t' '$1 ~ /^[0-9]+$/ && $2 ~ /^[0-9]+$/ { added += $1; removed += $2 } END { printf "%d %d\n", added, removed }'
+  # Match Tig's default diff settings. Untracked contents stay out of the prompt's
+  # synchronous path; they still make the branch dirty through Git status.
+  command git -C "$root" diff --numstat --find-copies --diff-algorithm=myers --no-ext-diff --no-textconv --ignore-submodules=dirty $base -- 2> /dev/null | command awk -F '\t' '$1 ~ /^[0-9]+$/ && $2 ~ /^[0-9]+$/ { added += $1; removed += $2 } END { printf "%d %d\n", added, removed }'
 end
 
 ## Function to show a segment
@@ -142,6 +115,11 @@ function show_git_info -d "Show git HEAD, linked worktree, and dirty state"
         printf '+%s' $stats[1]
         set_color -o red
         printf '-%s ' $stats[2]
+        set -l untracked (_git_untracked_count)
+        if test "$untracked" -gt 0
+          set_color -o yellow
+          printf '◌%s ' "$untracked"
+        end
       end
     else
       set_color -o green

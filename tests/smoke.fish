@@ -157,7 +157,7 @@ cd nested
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'nested worktree label'
 echo changed > ../tracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'untracked worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +0-0 ◌1 ' 'untracked worktree changes'
 command git add ../tracked
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'staged worktree changes'
@@ -178,7 +178,7 @@ or exit 1
 set -l commit (command git rev-parse --short HEAD)
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} " 'detached worktree label'
 touch untracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} +0-0 " 'detached worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} +0-0 ◌1 " 'detached worktree changes'
 
 cd $temp_repo
 or exit 1
@@ -220,18 +220,18 @@ printf 'new\nlines\n' > 'untracked with spaces'
 printf 'ignored\n' > ignored
 printf 'ignored\n' > .git/info/exclude
 printf '\0binary\n' > binary
-assert_equal (_git_diff_stats) '3 1' 'untracked text, binary, empty, and ignored files'
+assert_equal (_git_diff_stats) '1 1' 'untracked contents do not contribute to line statistics'
 mkdir nested
 cd nested
 or exit 1
 command git config diff.relative true
-assert_equal (_git_diff_stats) '3 1' 'repository-wide diff from a subdirectory'
+assert_equal (_git_diff_stats) '1 1' 'repository-wide diff from a subdirectory'
 cd $temp_repo
 or exit 1
 printf 'one\ntwo\nthree\n' > tracked
-assert_equal (_git_diff_stats) '2 0' 'staged and unstaged changes cancel out'
+assert_equal (_git_diff_stats) '0 0' 'staged and unstaged changes cancel out'
 command rm tracked
-assert_equal (_git_diff_stats) '2 3' 'deleted tracked file'
+assert_equal (_git_diff_stats) '0 3' 'deleted tracked file'
 
 command git init --quiet $temp_root/unborn
 or exit 1
@@ -241,7 +241,7 @@ printf 'one\ntwo\n' > tracked
 command git add tracked
 printf 'one\n' > tracked
 printf 'new\n' > untracked
-assert_equal (_git_diff_stats) '2 0' 'net diff before first commit'
+assert_equal (_git_diff_stats) '1 0' 'net diff before first commit'
 
 command git init --quiet $temp_root/diff-options
 or exit 1
@@ -265,41 +265,38 @@ assert_equal (_git_diff_stats) '2 1' 'Tig copy detection despite diff.renames co
 command git reset --quiet --hard HEAD
 or exit 1
 
-# Exercise the batch path with literal filenames, Git attributes, and symlinks.
-printf 'forced-binary -diff\nforced-text diff\n' > .gitattributes
-printf 'one\ntwo\n' > forced-binary
-printf '\0one\ntwo\n' > forced-text
-printf 'one\ntwo\n' > 'space name'
+# Untracked contents must not run clean filters while drawing the prompt.
+command git config filter.eden-probe.clean 'printf invoked >> .git/eden-filter-invocations; cat'
+printf 'untracked-* filter=eden-probe\n' > .gitattributes
+for number in (seq 16)
+  printf 'one\ntwo\n' > untracked-$number
+end
 set -l tab_name (printf 'tab\tname')
 set -l newline_name (printf 'line\nbreak' | string collect)
-printf 'one\ntwo\n' > "$tab_name"
-printf 'one\ntwo\n' > "$newline_name"
-printf 'one\ntwo\n' > ':()magic'
-printf 'one\ntwo' > '-leading-dash'
-printf '\0binary\n' > binary
-touch empty
-command ln -s missing-target link
+touch "$tab_name" "$newline_name"
 printf 'ignored\n' > ignored
 printf 'ignored\n' >> .git/info/exclude
-set -l index_before (command git hash-object .git/index)
-set -l objects_before (command find .git/objects -type f | sort | string collect)
-assert_equal (_git_diff_stats) '15 0' 'batched untracked diff statistics'
-assert_equal (command git hash-object .git/index) "$index_before" 'batch preserves the real index'
-assert_equal (command find .git/objects -type f | sort | string collect) "$objects_before" 'batch preserves the real objects'
+assert_equal (_git_diff_stats) '0 0' 'untracked files have no line statistics'
+assert_equal (_git_untracked_count) '19' 'untracked file count handles special filenames and ignores excluded files'
+assert_contains (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '+0-0 ◌19 ' 'untracked file count in prompt'
+if test -e .git/eden-filter-invocations
+  echo 'prompt read untracked contents through a clean filter' >&2
+  exit 1
+end
 mkdir nested
 cd nested
 or exit 1
-command git config diff.relative true
-assert_equal (_git_diff_stats) '15 0' 'batched untracked files from a subdirectory'
+assert_equal (_git_untracked_count) '19' 'repository-wide untracked count from a subdirectory'
 cd ..
 or exit 1
-command git init --quiet embedded
-command git -C embedded -c user.name='Eden Test' -c user.email=eden@example.invalid commit --quiet --allow-empty -m initial
+command git add untracked-1
 or exit 1
-assert_equal (_git_diff_stats) '15 0' 'untracked embedded repository has no text line statistics'
-command git init --quiet unborn-embedded
-or exit 1
-assert_equal (_git_diff_stats) '15 0' 'failed batch falls back to individual files'
+if not test -e .git/eden-filter-invocations
+  echo 'clean filter fixture did not run when the new file was staged' >&2
+  exit 1
+end
+assert_equal (_git_diff_stats) '2 0' 'new files contribute line statistics after staging'
+assert_equal (_git_untracked_count) '18' 'staged new files leave the untracked count'
 
 mkdir -p $temp_repo/eden-parent/eden-child
 cd $temp_repo/eden-parent/eden-child
