@@ -1,3 +1,11 @@
+if not set -q EDEN_TEST_ISOLATED
+  set -l config_dir (mktemp -d)
+  env XDG_CONFIG_HOME=$config_dir EDEN_TEST_ISOLATED=1 fish (status filename)
+  set -l result $status
+  rm -rf $config_dir
+  exit $result
+end
+
 set -l root (realpath (dirname (status filename))/..)
 source $root/functions/fish_prompt.fish
 source $root/functions/fish_right_prompt.fish
@@ -164,6 +172,7 @@ assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') 
 
 eden_toggle_diff_stats
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature}× ' 'hidden diff statistics'
+assert_equal (fish -c 'echo $THEME_EDEN_HIDE_DIFF_STATS') yes 'hidden setting persists in a new shell'
 set -l hidden_git (show_git_info | string collect -N)
 set -l dirty_label (printf '%s{eden-feature}× ' (set_color -o red))
 if not string match --quiet --regex (string escape --style=regex -- "$dirty_label") -- "$hidden_git"
@@ -172,6 +181,7 @@ if not string match --quiet --regex (string escape --style=regex -- "$dirty_labe
 end
 eden_toggle_diff_stats
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'restored diff statistics'
+assert_equal (fish -c 'echo $THEME_EDEN_HIDE_DIFF_STATS') no 'restored setting persists in a new shell'
 
 cd $temp_root/detached
 or exit 1
