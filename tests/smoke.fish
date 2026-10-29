@@ -11,6 +11,9 @@ source $root/functions/fish_prompt.fish
 source $root/functions/fish_right_prompt.fish
 source $root/functions/fish_mode_prompt.fish
 source $root/functions/eden_toggle_diff_stats.fish
+source $root/functions/eden_toggle_path.fish
+source $root/functions/eden_toggle_host.fish
+source $root/functions/eden_toggle_ssh_tag.fish
 source $root/conf.d/eden.fish
 
 function assert_contains -a output expected label
@@ -25,6 +28,14 @@ function assert_equal -a output expected label
     printf '%s: expected %s, got %s\n' "$label" (string escape -- "$expected") (string escape -- "$output") >&2
     exit 1
   end
+end
+
+for pair in 'eden_toggle_path theme_short_path' 'eden_toggle_host THEME_EDEN_SHOW_HOST' 'eden_toggle_ssh_tag THEME_EDEN_HIDE_SSH_TAG'
+  set -l parts (string split ' ' -- $pair)
+  $parts[1]
+  assert_equal (fish -c 'echo $$argv[1]' -- $parts[2]) yes "$parts[1] persists enabled"
+  $parts[1]
+  assert_equal (fish -c 'echo $$argv[1]' -- $parts[2]) no "$parts[1] persists disabled"
 end
 
 set -l initial_prompt (fish_prompt | string collect -N)
