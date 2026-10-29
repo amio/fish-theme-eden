@@ -118,7 +118,7 @@ function show_git_info -d "Show git HEAD, linked worktree, and dirty state"
         set -l untracked (_git_untracked_count)
         if test "$untracked" -gt 0
           set_color -o yellow
-          printf '◌%s ' "$untracked"
+          printf 'u%s ' "$untracked"
         end
       end
     else

@@ -157,7 +157,7 @@ cd nested
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} ' 'nested worktree label'
 echo changed > ../tracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +0-0 ◌1 ' 'untracked worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +0-0 u1 ' 'untracked worktree changes'
 command git add ../tracked
 or exit 1
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '{eden-feature} +1-0 ' 'staged worktree changes'
@@ -178,7 +178,7 @@ or exit 1
 set -l commit (command git rev-parse --short HEAD)
 assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} " 'detached worktree label'
 touch untracked
-assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} +0-0 ◌1 " 'detached worktree changes'
+assert_equal (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') "{detached@$commit} +0-0 u1 " 'detached worktree changes'
 
 cd $temp_repo
 or exit 1
@@ -278,7 +278,7 @@ printf 'ignored\n' > ignored
 printf 'ignored\n' >> .git/info/exclude
 assert_equal (_git_diff_stats) '0 0' 'untracked files have no line statistics'
 assert_equal (_git_untracked_count) '19' 'untracked file count handles special filenames and ignores excluded files'
-assert_contains (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '+0-0 ◌19 ' 'untracked file count in prompt'
+assert_contains (show_git_info | string replace --all --regex '\x1b\[[0-9;]*m' '') '+0-0 u19 ' 'untracked file count in prompt'
 if test -e .git/eden-filter-invocations
   echo 'prompt read untracked contents through a clean filter' >&2
   exit 1
